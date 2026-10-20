@@ -8,7 +8,7 @@ class FondParallaxe {
         this.couches = [
             { source: "nuages.png", vitesse: 6, hauteur: hauteur * 0.28, y: hauteur * 0.01, opacite: 0.4 },
             { source: "nuages.png", vitesse: 14, hauteur: hauteur * 0.42, y: hauteur * 0.12, opacite: 0.65 },
-            { source: "ville-lointaine.png", vitesse: 32, hauteur: hauteur * 0.4, y: hauteur * 0.52, opacite: 0.85 },
+            { source: "ville-lointaine.png", vitesse: 32, hauteur: hauteur * 0.4, y: hauteur * 0.52 - 30, opacite: 0.85 },
             { source: "ville-proche.png", vitesse: 85, hauteur: hauteur * 0.5, y: hauteur * 0.5, opacite: 1 }
         ].map(couche => ({ ...couche, image: new Image(), decalage: 0 }));
     }
