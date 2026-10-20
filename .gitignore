@@ -1,0 +1,15 @@
+# Local-only extension and its source assets
+/easterEgg.js
+/easterEgg.png
+/tower.png
+/silhouettes.js
+/index.local.html
+/.local/
+
+# Local settings and temporary files
+.env
+.env.*
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
