@@ -4,16 +4,14 @@ const canvas = document.getElementById("jeu");
 const ctx = canvas.getContext("2d");
 const boutonRedemarrer = document.getElementById("redemarrer");
 
-const LARGEUR_BULLET = 32;
-const HAUTEUR_BULLET = 16;
+const LARGEUR_BULLET = 48;
+const HAUTEUR_BULLET = 24;
 const DELAI_BULLET = 800; // Millisecondes
 const POINTS_PAR_BULLET = 100;
 const VITESSE_BULLET_INITIALE = 360; // Pixels par seconde
 const VITESSE_BULLET_MAXIMALE = 720;
 const ACCELERATION_PAR_BULLET = 3;
 const DELTA_MAXIMAL = 0.05; // Secondes
-const VITESSE_NUAGES = 20;
-const VITESSE_VILLE = 85; // Pixels par seconde, pour un défilement plus lent que les obstacles
 
 // Zone visible de notre PNG de 512 × 512, sans ses marges transparentes.
 const DECOUPE_AVION = { x: 0, y: 143, largeur: 512, hauteur: 226 };
@@ -27,13 +25,10 @@ const avion = {
 
 const touches = new Set();
 const imageAvion = new Image();
-const imageVille = new Image();
-const coucheVille = document.createElement("canvas");
+const fond = new FondParallaxe(canvas.width, canvas.height);
 const imageBalle = new Image();
 
 let bullets = [];
-let decalageVille = 0;
-let decalageNuages = 0;
 let score = 0;
 let perdu = false;
 let enPause = true;
@@ -58,51 +53,8 @@ function creerBullet() {
     });
 }
 
-function preparerCouchesFond() {
-    coucheVille.width = imageVille.naturalWidth;
-    coucheVille.height = imageVille.naturalHeight;
-    const contexte = coucheVille.getContext("2d");
-    contexte.drawImage(imageVille, 0, 0);
-
-    // Fondre le ciel dans la ville avant les premiers toits, sans bord horizontal visible.
-    const transition = contexte.createLinearGradient(
-        0, coucheVille.height * 0.45,
-        0, coucheVille.height * 0.56
-    );
-    transition.addColorStop(0, "rgba(0, 0, 0, 0)");
-    transition.addColorStop(1, "rgba(0, 0, 0, 1)");
-    contexte.globalCompositeOperation = "destination-in";
-    contexte.fillStyle = transition;
-    contexte.fillRect(0, 0, coucheVille.width, coucheVille.height);
-    contexte.globalCompositeOperation = "source-over";
-}
-
-function deplacerFond(delta) {
-    const largeurTuile = imageVille.naturalWidth * canvas.height / imageVille.naturalHeight;
-    const periode = largeurTuile * 2;
-    decalageNuages = (decalageNuages + VITESSE_NUAGES * delta) % periode;
-    decalageVille = (decalageVille + VITESSE_VILLE * delta) % periode;
-}
-
-function dessinerCoucheFond(image, decalage) {
-    const largeurTuile = imageVille.naturalWidth * canvas.height / imageVille.naturalHeight;
-    const premiereTuile = Math.floor(decalage / largeurTuile);
-    let x = -(decalage % largeurTuile);
-
-    // Alterner l'image et son miroir pour raccorder les bords sans coupure.
-    for (let tuile = premiereTuile; x < canvas.width; tuile++, x += largeurTuile) {
-        const miroir = tuile % 2 === 1;
-        ctx.save();
-        ctx.translate(x + (miroir ? largeurTuile : 0), 0);
-        ctx.scale(miroir ? -1 : 1, 1);
-        ctx.drawImage(image, 0, 0, largeurTuile, canvas.height);
-        ctx.restore();
-    }
-}
-
 function dessiner() {
-    dessinerCoucheFond(imageVille, decalageNuages);
-    dessinerCoucheFond(coucheVille, decalageVille);
+    fond.dessiner(ctx);
 
     for (const extension of extensions) extension.dessiner();
 
@@ -204,7 +156,7 @@ function animer(instant) {
         delaiAvantBullet += DELAI_BULLET;
     }
 
-    deplacerFond(delta);
+    fond.deplacer(delta);
     deplacerAvion(delta);
     mettreAJourBullets(delta);
     for (const extension of extensions) {
@@ -250,8 +202,7 @@ function demarrer() {
 
     avion.y = (canvas.height - avion.hauteur) / 2;
     bullets = [];
-    decalageVille = 0;
-    decalageNuages = 0;
+    fond.reinitialiser();
     for (const extension of extensions) extension.reinitialiser();
     score = 0;
     perdu = false;
@@ -297,11 +248,10 @@ function chargerImage(image, source) {
 
 Promise.all([
     chargerImage(imageAvion, "avion.png"),
-    chargerImage(imageVille, "ville.png"),
+    fond.charger(chargerImage),
     chargerImage(imageBalle, "balle.png"),
     ...extensions.map(extension => extension.charger())
 ]).then(function () {
-    preparerCouchesFond();
     imagesChargees = true;
     boutonRedemarrer.disabled = false;
     demarrer();

@@ -11,4 +11,4 @@ Ouvre `index.html` dans un navigateur pour jouer. Aucune installation ni compila
 - La partie se met en pause en quittant la fenetre ou l'onglet, puis reprend au retour.
 
 Le ciel et la ville defilent a des vitesses differentes pour creer un effet de parallaxe.
-Les reglages se trouvent au debut de `jeu.js`. Les prompts des images generees sont conserves dans `ASSETS.md`.
+Les reglages du jeu se trouvent au debut de `jeu.js`. Les plans de parallaxe, leurs vitesses, hauteurs et opacites se reglent dans `fond.js`. Les prompts des images generees sont conserves dans `ASSETS.md`.
